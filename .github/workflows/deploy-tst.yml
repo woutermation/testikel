@@ -27,13 +27,25 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release
 
-      - name: Publish
-        run: dotnet publish --configuration Release --no-build --output ./published
+      - name: Publish API
+        run: dotnet publish --configuration Release --no-build --output ./published/api MyWebApp.Api/MyWebApp.Api.csproj
   
-      - name: Deploy to Azure Web App
+      - name: Publish Client
+        run: dotnet publish --configuration Release --no-build --output ./published/client MyWebApp.Client/MyWebApp.Client.csproj
+  
+      - name: 'Deploy API to Azure'
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: ${{ env.AZURE_WEBAPP_SLOT_NAME }}
           publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }}
-          package: './published'
+          package: './published/api'
+  
+      - name: 'Deploy Client to Azure'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: ${{ env.AZURE_WEBAPP_SLOT_NAME }}
+          publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }} 
+          package: './published/client'
+

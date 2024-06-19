@@ -1,0 +1,21 @@
+@page "/test"
+@inject HttpClient Http
+@inject ILogger<Test> Log
+
+Response: @response
+
+@code {
+    string response = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            response = await Http.GetStringAsync("/Sample");
+            Log.LogInformation("Received response: {Response}", response);
+        }
+        catch (Exception ex)
+        {
+            Log.LogError(ex, "Error occurred while getting response");
+        }
+    }
+}

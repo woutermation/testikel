@@ -39,7 +39,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: ${{ env.AZURE_WEBAPP_SLOT_API_NAME }}
-          publish-profile: ${{ secrets.API-TST-PUBLISHPROFILE }}
+          publish-profile: ${{ secrets.APITSTPUBLISHPROFILE }}
           package: './published/api'
   
       - name: 'Deploy Client to Azure'

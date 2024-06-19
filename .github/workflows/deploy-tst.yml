@@ -34,7 +34,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.azureWebAppPublishProfile }} 
+          publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }} 
           package: './published'
 
       - name: Deploy to Azure Web App
@@ -42,5 +42,5 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: ${{ env.AZURE_WEBAPP_SLOT_NAME }}
-          publish-profile: ${{ secrets.TST_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }}
           package: './published'

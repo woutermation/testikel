@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MyWebApp.API.Controllers
@@ -13,7 +14,7 @@ namespace MyWebApp.API.Controllers
         {
             string test = "test";
             _logger.LogTrace("[ {test} ] Get method was called", test);
-            return "Hello from API!";
+            return $"Hello from API! {DateTime.Now:HH:mm:ss tt}";
         }
     }
 }

@@ -1,53 +1,57 @@
-$projectName = "Test"
+$projectName = "Test$(Get-Date -Format 'yyyyMMddHHmmss')"
+$rootfolder = "$((Get-Location).Path)/$($projectName)"
 dotnet new install MudBlazor.Templates
+dotnet tool update --global dotnet-ef
+winget install Microsoft.DotNet.SDK.8
 
 # Step 2: Create a new solution
-  
+
 mkdir "$($projectName)/.vscode"
-cd $($projectName)
+mkdir "$($projectName)/src"
+mkdir "$($projectName)/tests"
+Set-Location $($projectName)
 dotnet new sln
- 
+dotnet new editorconfig
+dotnet new globaljson
+dotnet new gitignore
+
 # Step 3: Create a new Web API project
 
-dotnet new webapi --use-local-db --use-controllers --name "$($projectName).Api" --output "$($projectName).Api"
-cd "$($projectName).Api"
-dotnet add package Serilog.AspNetCore --version 8
-cd ..
- 
+# dotnet new webapi --use-local-db --use-controllers --name "$($projectName).Api" --output "src/$($projectName).Api"
+# Set-Location "src/$($projectName).Api"
+# dotnet add package Serilog.AspNetCore --version 8.*
+# # dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+# dotnet add package Microsoft.Extensions.DependencyInjection
+# Set-Location $rootfolder
+
 # Step 4: Create a new MudBlazor project with authentication
 
-dotnet new mudblazor --auth Individual --interactivity Server --use-local-db --name "$($projectName).Client" --output "$($projectName).Client"
+# dotnet new mudblazor --auth Individual --interactivity Server --use-local-db --name "$($projectName).Client" --output "$($projectName).Client"
+dotnet new mudblazor --interactivity Server --name "$($projectName).Client" --output "src/$($projectName).Client"
 
-# Create a new class library project for the models
+# Create a new class library project for the models / Domain
 
-dotnet new classlib --name "$($projectName).Models" --output "$($projectName).Models"
+dotnet new classlib --name "$($projectName).Domain" --output "src/$($projectName).Domain"
 
 # Create a new class library project for data access
-dotnet new classlib --name "$($projectName).Data" --output "$($projectName).Data"
-
+dotnet new classlib --name "$($projectName).Infrastructure" --output "src/$($projectName).Infrastructure"
+Set-Location "src/$($projectName).Infrastructure"
+dotnet add package Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore --version 8.*
+dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 8.*
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 8.*
+dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.*
+Set-Location $rootfolder
 # Add the projects to the solution
-
-dotnet sln add .\$($projectName).Api\$($projectName).Api.csproj
-dotnet sln add .\$($projectName).Client\$($projectName).Client.csproj
-dotnet sln add .\$($projectName).Models\$($projectName).Models.csproj
-dotnet sln add .\$($projectName).Data\$($projectName).Data.csproj
+Get-ChildItem -Path "$($rootfolder)"-Filter "*.csproj" -Recurse | ForEach-Object { dotnet sln add $_.FullName }
 
 # Add the necessary references for the models project
 
-dotnet add "$($projectName).Api\$($projectName).Api.csproj" reference "$($projectName).Models\$($projectName).Models.csproj"
-dotnet add "$($projectName).Client\$($projectName).Client.csproj" reference "$($projectName).Models\$($projectName).Models.csproj"
+dotnet add "src\$($projectName).Infrastructure\$($projectName).Infrastructure.csproj" reference "src\$($projectName).Domain\$($projectName).Domain.csproj"
+# dotnet add "src\$($projectName).Api\$($projectName).Api.csproj" reference "src\$($projectName).Infrastructure\$($projectName).Infrastructure.csproj"
+dotnet add "src\$($projectName).Client\$($projectName).Client.csproj" reference "src\$($projectName).Infrastructure\$($projectName).Infrastructure.csproj"
 
-# Create a shared folder in the root of the solution
-$sharedConfigDir = "SharedConfig"
-if (-not (Test-Path $sharedConfigDir)) {
-  New-Item -ItemType Directory -Path $sharedConfigDir
-}
-Move-Item "$($projectName).Client\appsettings*.json" $sharedConfigDir
-Remove-Item "$($projectName).Api\appsettings.*.json" -Force
-dotnet add "$($sharedConfigDir)\appsettings.json" reference "$($sharedConfigDir)\appsettings.json"
 # Build the solution
-
-dotnet new gitignore
+Get-ChildItem -Path "$($rootfolder)"-Filter "Class1.cs" -Recurse | Remove-Item
 dotnet build
 
 # Step 7: Add the necessary extensions to the .vscode folder
@@ -63,6 +67,16 @@ dotnet build
 }
 "@ | Out-File -FilePath .vscode\settings.json -Encoding utf8
 
+
+
+# Create a shared folder in the root of the solution
+# $sharedConfigDir = "SharedConfig"
+# if (-not (Test-Path $sharedConfigDir)) {
+#   New-Item -ItemType Directory -Path $sharedConfigDir
+# }
+# Move-Item "$($projectName).Client\appsettings*.json" $sharedConfigDir
+# Remove-Item "$($projectName).Api\appsettings.*.json" -Force
+# dotnet add "$($sharedConfigDir)\appsettings.json" reference "$($sharedConfigDir)\appsettings.json"
 
 # # Define paths
 # $projectPath = "C:\Projects\TestSolution\Test.Api\Test.Api.csproj"
